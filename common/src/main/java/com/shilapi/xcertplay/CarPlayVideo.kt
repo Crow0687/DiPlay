@@ -54,7 +54,8 @@ internal object CarPlayVideo : CarPlayVideoListener {
         next.videoListener = this
     }
 
-    override fun readParked(): Boolean? = appContext?.let(BydNavigationOutputs::parked)
+    override fun readParked(): Boolean? = if (LeapmotorC11.detected()) LeapmotorGearMonitor.videoAllowed()
+        else appContext?.let(BydNavigationOutputs::parked)
 
     override fun onVideoAllowedChanged(allowed: Boolean) {
         if (!allowed) main.post { closePlayer("the car left P") }

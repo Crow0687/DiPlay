@@ -649,6 +649,17 @@ class CarPlayHostActivity : ComponentActivity() {
         NavigationWidgetUpdater.attach(applicationContext)
         CarPlayCallKeys.install(applicationContext)
         CenterMapOverlay.requestShow = ::showCenterMap
+        LeapmotorShowmapOverlay.attach(this, { surface ->
+            sink?.setMirrorSurface(SCREEN_TYPE_MAIN, LeapmotorShowmapOverlay.KEY, surface)
+        }, { contacts -> controller?.sendTouch(contacts) }, { surface, texture ->
+            val owners = (listOfNotNull(sink) + retiringSinks).distinct()
+            if (owners.isEmpty()) { surface.release(); texture.release() } else {
+                val remaining = java.util.concurrent.atomic.AtomicInteger(owners.size)
+                owners.forEach { owner -> owner.releaseMirrorSurface(SCREEN_TYPE_MAIN, LeapmotorShowmapOverlay.KEY, surface) {
+                    if (remaining.decrementAndGet() == 0) { surface.release(); texture.release() }
+                } }
+            }
+        })
         MapMirrors.sink = mirrorSink
         MapMirrors.onChanged = mirrorsChanged
         languagePreferenceAtCreate = AppLocale.preference(this)
@@ -1278,6 +1289,11 @@ class CarPlayHostActivity : ComponentActivity() {
             val size = ClusterMapPresentation.sizeOf(display)
             if (size.x > 0 && size.y > 0) {
                 clusterStreamOnDisplay = true
+                LeapmotorC11.viewport(size.x, size.y)?.let { viewport ->
+                    MapMirrors.streamAspect = 1.0
+                    appendLog("C11 cluster: 720x720 stream at $viewport")
+                    return LeapmotorC11.streamConfig()
+                }
                 if (DiLink51ClusterLayout.supported()) {
                     val plan = DiLink51ClusterLayout.plan(size.x, size.y, theme) ?: return null
                     return DiLink51ClusterLayout.streamConfig().also {
@@ -1345,6 +1361,7 @@ class CarPlayHostActivity : ComponentActivity() {
 
     // Hardware navigation belongs to the iPhone-rendered CarPlay UI, not Android View focus.
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (LeapmotorWheelLearning.onKey(this, event)) return true
         val physicalKey = Triple(event.deviceId, event.keyCode, event.scanCode)
         val downOrUp = event.action == KeyEvent.ACTION_DOWN || event.action == KeyEvent.ACTION_UP
         if (downOrUp && physicalKey in legacySiriPresses) {
@@ -1541,6 +1558,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        LeapmotorShowmapOverlay.detach(this)
         resetSidePanel()
         releaseSidePanelEffects()
         hostAppearanceResumed = false
@@ -4865,6 +4883,7 @@ class CarPlayHostActivity : ComponentActivity() {
             showSidePanelGripHint()
         }
         MapMirrors.reapply()
+        LeapmotorShowmapOverlay.reapply()
         CarPlayBackgroundSession.store(snapshot.controller, snapshot.sink, snapshot.width, snapshot.height,
             this, snapshot.display) { completion ->
             runOnUiThread {
@@ -4969,6 +4988,7 @@ class CarPlayHostActivity : ComponentActivity() {
         currentSurface?.let(::attachSurface)
         clusterSurface?.let { renderer.setSurface(SCREEN_TYPE_ALT, it) }
         MapMirrors.reapply()
+        LeapmotorShowmapOverlay.reapply()
         val media = createMediaEngine(renderer)
         val pairings = AirPlayPersistence.loadPairings(this) { id, key ->
             AirPlayPersistence.savePairing(this, id, key)

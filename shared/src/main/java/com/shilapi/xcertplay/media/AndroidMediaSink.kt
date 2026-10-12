@@ -246,6 +246,7 @@ class AndroidMediaSink(
     // Closed decoders whose workers may still hold a codec on a surface until they exit; a surface
     // detach also waits for them.
     private val closingVideoDecoders = ConcurrentHashMap.newKeySet<VideoDecoder>()
+    private val retiringMirrorDecoders = LinkedHashMap<Surface, MutableSet<VideoDecoder>>()
     // How long a surface detach waits for decoders to confirm, and then for an unconfirmed one to exit
     // after it is closed. Variables so tests can shorten them.
     internal var detachTimeoutNanos = 2_000_000_000L
@@ -385,6 +386,8 @@ class AndroidMediaSink(
     private fun onVideoDecoderExit(decoder: VideoDecoder) {
         val listeners = synchronized(videoOwnershipLock) {
             closingVideoDecoders -= decoder
+            retiringMirrorDecoders.values.forEach { it.remove(decoder) }
+            retiringMirrorDecoders.entries.removeIf { it.value.isEmpty() }
             videoDecoders.entries.removeIf { it.value === decoder }
             if (videoClosed && videoDecoders.isEmpty() && closingVideoDecoders.isEmpty()) {
                 videoReleasedListeners.toList().also { videoReleasedListeners.clear() }
@@ -413,7 +416,7 @@ class AndroidMediaSink(
             if (videoClosed) return
             val id = type to key
             synchronized(mirrorLock) {
-                mirrorDecoders.remove(id)?.close()
+                retireMirrorDecoder(id)
                 if (surface == null) {
                     mirrorSurfaces.remove(id)
                     return
@@ -422,6 +425,34 @@ class AndroidMediaSink(
             }
             lastVideoConfig[type]?.let { (codec, data) -> mirrorDecoders(type).forEach { it.configure(codec, data) } }
         }
+    }
+
+    /** Remove a mirror and release its surface only after its codec worker has stopped. */
+    fun releaseMirrorSurface(type: Int, key: String, surface: Surface, released: () -> Unit) {
+        val decoders = synchronized(videoOwnershipLock) {
+            synchronized(mirrorLock) {
+                val id = type to key
+                if (mirrorSurfaces[id] === surface) {
+                    retireMirrorDecoder(id)
+                    mirrorSurfaces.remove(id)
+                }
+                retiringMirrorDecoders[surface]?.toList().orEmpty()
+            }
+        }
+        if (decoders.isEmpty()) released() else Thread({
+            // Retain the output if a vendor codec gets stuck rather than release a surface it still uses.
+            decoders.forEach { it.awaitExitUntil(Long.MAX_VALUE) }
+            released()
+        }, "diplay-mirror-release").apply { isDaemon = true; start() }
+    }
+
+    /** Called under videoOwnershipLock and mirrorLock, before forgetting a mirror output. */
+    private fun retireMirrorDecoder(id: Pair<Int, String>) {
+        val decoder = mirrorDecoders.remove(id) ?: return
+        mirrorSurfaces[id]?.let { surface ->
+            retiringMirrorDecoders.getOrPut(surface) { mutableSetOf() }.add(decoder)
+        }
+        decoder.close()
     }
 
     private fun mirrorDecoders(type: Int): List<VideoDecoder> = synchronized(videoOwnershipLock) {
@@ -481,7 +512,7 @@ class AndroidMediaSink(
                 videoDiagnosticHandlers.remove(type)
                 videoDecoders[type]?.let { retire(type, it) }
                 synchronized(mirrorLock) {
-                    mirrorDecoders.keys.filter { it.first == type }.forEach { mirrorDecoders.remove(it)?.close() }
+                    mirrorDecoders.keys.filter { it.first == type }.forEach(::retireMirrorDecoder)
                 }
                 lastVideoConfig.remove(type)
                 pendingVideoCodec.remove(type)
@@ -596,7 +627,7 @@ class AndroidMediaSink(
             videoClosed = true
             videoDecoders.entries.toList().forEach { (type, decoder) -> retire(type, decoder) }
             synchronized(mirrorLock) {
-                mirrorDecoders.values.forEach(VideoDecoder::close)
+                mirrorDecoders.keys.toList().forEach(::retireMirrorDecoder)
                 mirrorDecoders.clear()
                 mirrorSurfaces.clear()
             }

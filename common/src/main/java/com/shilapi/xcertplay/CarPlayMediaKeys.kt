@@ -78,6 +78,8 @@ internal object CarPlayMediaKeys {
         appContext = context.applicationContext
         controller = next
         GeelyWheelKeys.start(context)
+        LeapmotorMediaKeys.attach(context, next)
+        LeapmotorGearMonitor.attach(context, next)
         com.shilapi.xcertplay.media.AmbientMusicController.claimPlaybackOwner(next)
         next.playbackListener = { playing ->
             com.shilapi.xcertplay.media.AmbientMusicController.phonePlaybackChanged(next, playing)
@@ -100,6 +102,8 @@ internal object CarPlayMediaKeys {
         expected.artworkListener = null
         controller = null
         GeelyWheelKeys.stop()
+        LeapmotorMediaKeys.detach(expected)
+        LeapmotorGearMonitor.detach(expected)
         releaseLocked()
     }
 
@@ -404,6 +408,7 @@ internal object CarPlayMediaKeys {
 
     private val callback = CarPlayMediaCallback(
         experimentalDiLink3Keys = { appContext?.let(BydOutputSettings::carPlayCallControls) == true },
+        onHardwareKey = { event -> appContext?.let { LeapmotorWheelLearning.onKey(it, event) } == true },
         send = ::send,
     )
 
@@ -514,11 +519,13 @@ internal object CarPlayMediaKeys {
  */
 internal class CarPlayMediaCallback(
     private val experimentalDiLink3Keys: () -> Boolean = { false },
+    private val onHardwareKey: (KeyEvent) -> Boolean = { false },
     private val send: (index: Int, source: String) -> Unit,
 ) : MediaSession.Callback() {
     override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
         @Suppress("DEPRECATION")
         val event = mediaButtonIntent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) ?: return false
+        if (onHardwareKey(event)) return true
         val index = CarPlayMediaButton.forKeyCode(event.keyCode, experimentalDiLink3Keys())
             ?: return super.onMediaButtonEvent(mediaButtonIntent)
         if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {

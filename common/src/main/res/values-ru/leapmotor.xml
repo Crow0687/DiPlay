@@ -1,0 +1,16 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">Обучение кнопок мультимедиа C11</string>
+    <string name="settings_leapmotor_clear_bindings">Сбросить назначенные кнопки</string>
+    <string name="settings_leapmotor_press_key">Нажмите нужную кнопку на руле. Ожидание — 15 секунд.</string>
+    <string name="settings_leapmotor_binding_saved">Назначение кнопки сохранено.</string>
+    <string name="settings_leapmotor_binding_failed">Не удалось сохранить назначение.</string>
+    <string name="settings_leapmotor_showmap">Окно карты C11 (экспериментально)</string>
+    <string name="settings_leapmotor_showmap_description">Показывает экран CarPlay по запросу окна карты автомобиля. Требуется разрешение на показ поверх приложений.</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>Следующий трек</item>
+        <item>Предыдущий трек</item>
+        <item>Воспроизвести</item>
+        <item>Пауза</item>
+        <item>Воспроизведение / пауза</item>
+    </string-array>
+</resources>

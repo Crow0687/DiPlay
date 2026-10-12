@@ -1,0 +1,16 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">Aprender botones multimedia de C11</string>
+    <string name="settings_leapmotor_clear_bindings">Borrar botones aprendidos</string>
+    <string name="settings_leapmotor_press_key">Pulsa el botón del volante que quieras asignar. Se escuchará durante 15 segundos.</string>
+    <string name="settings_leapmotor_binding_saved">Asignación del botón guardada.</string>
+    <string name="settings_leapmotor_binding_failed">No se pudo guardar la asignación.</string>
+    <string name="settings_leapmotor_showmap">Mapa flotante de C11 (experimental)</string>
+    <string name="settings_leapmotor_showmap_description">Muestra CarPlay cuando el coche solicita la ventana del mapa. Requiere permiso para mostrar sobre otras apps.</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>Pista siguiente</item>
+        <item>Pista anterior</item>
+        <item>Reproducir</item>
+        <item>Pausar</item>
+        <item>Reproducir / pausar</item>
+    </string-array>
+</resources>

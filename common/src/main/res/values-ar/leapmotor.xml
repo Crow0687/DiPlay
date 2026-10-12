@@ -1,0 +1,16 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">تعلّم أزرار الوسائط في C11</string>
+    <string name="settings_leapmotor_clear_bindings">مسح الأزرار المتعلّمة</string>
+    <string name="settings_leapmotor_press_key">اضغط زر المقود المراد تعيينه. الاستماع لمدة 15 ثانية.</string>
+    <string name="settings_leapmotor_binding_saved">تم حفظ تعيين الزر.</string>
+    <string name="settings_leapmotor_binding_failed">تعذر حفظ تعيين الزر.</string>
+    <string name="settings_leapmotor_showmap">نافذة خريطة C11 (تجريبي)</string>
+    <string name="settings_leapmotor_showmap_description">عرض شاشة CarPlay عندما تطلب السيارة نافذة الخريطة. يتطلب إذن الظهور فوق التطبيقات.</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>المقطع التالي</item>
+        <item>المقطع السابق</item>
+        <item>تشغيل</item>
+        <item>إيقاف مؤقت</item>
+        <item>تشغيل / إيقاف مؤقت</item>
+    </string-array>
+</resources>

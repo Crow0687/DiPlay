@@ -56,9 +56,15 @@ internal class ClusterMapPresentation(
         super.onCreate(savedInstanceState)
         val size = sizeOf(display)
         val adaptive = DiLink51ClusterLayout.supported()
-        val plan = if (adaptive) DiLink51ClusterLayout.plan(size.x, size.y, theme) else null
+        val leap = LeapmotorC11.viewport(size.x, size.y)
+        val plan = if (leap != null) DiLink51ClusterLayout.Plan(leap.left, leap.top, leap.width, leap.height, false)
+            else if (adaptive) DiLink51ClusterLayout.plan(size.x, size.y, theme) else null
+        val streamWidth = if (leap != null) 720 else DiLink51ClusterLayout.STREAM_WIDTH
+        val streamHeight = if (leap != null) 720 else DiLink51ClusterLayout.STREAM_HEIGHT
+        val sourceLeft = if (leap != null) 0 else plan?.sourceLeft ?: 0
+        val sourceTop = if (leap != null) 0 else plan?.sourceTop ?: 0
         // The adaptive DiLink 5.1 layout follows the cluster's own contrast; elsewhere the cluster follows DiPlay's theme.
-        val dark = if (plan != null) DiLink51ClusterLayout.dark(context, theme) else context.resolveAppNightNow()
+        val dark = if (adaptive && leap == null) DiLink51ClusterLayout.dark(context, theme) else context.resolveAppNightNow()
         val backdrop = if (dark) Color.rgb(15, 22, 30) else Color.rgb(207, 218, 229)
         val placeholder = if (dark) Color.BLACK else Color.rgb(233, 238, 246)
         val root = FrameLayout(context).apply {
@@ -76,14 +82,14 @@ internal class ClusterMapPresentation(
             val textureView = TextureView(context)
             fun transform() {
                 textureView.setTransform(Matrix().apply {
-                    setScale(DiLink51ClusterLayout.STREAM_WIDTH.toFloat() / plan.width,
-                        DiLink51ClusterLayout.STREAM_HEIGHT.toFloat() / plan.height)
-                    postTranslate(-plan.sourceLeft.toFloat(), -plan.sourceTop.toFloat())
+                    setScale(streamWidth.toFloat() / plan.width,
+                        streamHeight.toFloat() / plan.height)
+                    postTranslate(-sourceLeft.toFloat(), -sourceTop.toFloat())
                 })
             }
             textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                 override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
-                    texture.setDefaultBufferSize(DiLink51ClusterLayout.STREAM_WIDTH, DiLink51ClusterLayout.STREAM_HEIGHT)
+                    texture.setDefaultBufferSize(streamWidth, streamHeight)
                     transform()
                     outputSurface = Surface(texture).also(onSurface)
                 }
@@ -203,6 +209,16 @@ internal class ClusterMapPresentation(
         fun findDisplay(context: Context, theme: DiLink51ClusterLayout.Theme = DiLink51ClusterLayout.theme(context)): Display? {
             val displays = context.getSystemService(DisplayManager::class.java)
                 ?.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION) ?: return null
+            if (LeapmotorC11.detected()) {
+                val candidates = displays.filter { it.displayId != Display.DEFAULT_DISPLAY && it.isValid &&
+                    !it.name.contains("fission_bg", true) && !it.name.contains("xdja", true) }
+                return candidates.filter { display ->
+                    listOf("HDMI", "meter", "cluster", "instrument", "screen").any { display.name.contains(it, true) }
+                }.maxByOrNull { it.displayId } ?: candidates.firstOrNull {
+                    val size = sizeOf(it)
+                    size.x == 1920 && size.y == 720
+                } ?: candidates.singleOrNull()
+            }
             val name = DiLink51ClusterLayout.displayName(
                 displays.map { it.name }, android.os.Build.FINGERPRINT, theme,
             )

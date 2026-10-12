@@ -1,0 +1,16 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">學習 C11 媒體按鍵</string>
+    <string name="settings_leapmotor_clear_bindings">清除已學習按鍵</string>
+    <string name="settings_leapmotor_press_key">請按要分配的方向盤按鍵，等待時間為 15 秒。</string>
+    <string name="settings_leapmotor_binding_saved">按鍵分配已儲存。</string>
+    <string name="settings_leapmotor_binding_failed">無法儲存此按鍵分配。</string>
+    <string name="settings_leapmotor_showmap">零跑地圖懸浮視窗（實驗性）</string>
+    <string name="settings_leapmotor_showmap_description">回應原車地圖視窗廣播，顯示 CarPlay 主畫面；需要懸浮視窗權限。</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>下一首</item>
+        <item>上一首</item>
+        <item>播放</item>
+        <item>暫停</item>
+        <item>播放 / 暫停</item>
+    </string-array>
+</resources>

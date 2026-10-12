@@ -527,6 +527,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     override fun onDestroy() {
+        LeapmotorWheelLearning.cancel(this)
         settingsSearchPopup?.dismiss()
         appearanceObserverRemoval?.invoke()
         appearanceObserverRemoval = null
@@ -1922,6 +1923,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         // Cluster video does not require a BYD navigation broadcast receiver.
         filteredSection(content, SettingsSection.CLUSTER_MAP,
             getString(R.string.carplay_map_on_instrument_cluster_experimental), R.drawable.ic_dp_dashboard) { card ->
+            if (LeapmotorC11.detected()) {
+                toggle(card, getString(R.string.settings_leapmotor_showmap), getString(R.string.settings_leapmotor_showmap_description),
+                    LeapmotorShowmapOverlay.enabled(this)) { enabled ->
+                    LeapmotorShowmapOverlay.saveEnabled(this, enabled)
+                    if (enabled && !Settings.canDrawOverlays(this))
+                        startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+                }
+            }
             reconnectingToggle(card, getString(R.string.adb_cluster_activity_mode),
                 getString(R.string.adb_cluster_activity_description), AirPlayPersistence.loadAdbClusterEnabled(this)) {
                 AirPlayPersistence.saveAdbClusterEnabled(this, it)
@@ -3575,6 +3584,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     /** Steering-wheel keys for the dashboard map zoom and the CarPlay joystick: the switches, the key service and the keys. */
     // One place for the key service setup, above every feature that needs it.
     private fun wheelKeysSettings(card: LinearLayout) {
+        if (LeapmotorC11.detected()) {
+            card.addView(button(getString(R.string.settings_leapmotor_wheel_learning), false) { LeapmotorWheelLearning.show(this) })
+        }
         // The joystick and map zoom use BYD's media and custom keys.
         val byd = CarHotspotSetup.isBydHeadUnit(this)
         val zoomAvailable = wheelMapZoomAvailable()
@@ -3751,6 +3763,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (LeapmotorWheelLearning.onKey(this, event)) return true
         if (event.action != KeyEvent.ACTION_DOWN && event.action != KeyEvent.ACTION_UP) return super.dispatchKeyEvent(event)
         val action = windowLearningPresses.filter(
             Triple(event.deviceId, event.keyCode, event.scanCode),

@@ -1,0 +1,16 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">Learn C11 media buttons</string>
+    <string name="settings_leapmotor_clear_bindings">Clear learned buttons</string>
+    <string name="settings_leapmotor_press_key">Press the steering-wheel button to assign. Listening for 15 seconds.</string>
+    <string name="settings_leapmotor_binding_saved">Button assignment saved.</string>
+    <string name="settings_leapmotor_binding_failed">Could not save this button assignment.</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>Next track</item>
+        <item>Previous track</item>
+        <item>Play</item>
+        <item>Pause</item>
+        <item>Play / pause</item>
+    </string-array>
+    <string name="settings_leapmotor_showmap">C11 map overlay (experimental)</string>
+    <string name="settings_leapmotor_showmap_description">Show the CarPlay screen when the car requests its map window. Requires overlay permission.</string>
+</resources>
