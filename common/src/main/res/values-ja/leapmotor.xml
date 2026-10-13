@@ -1,0 +1,17 @@
+<resources>
+    <string name="settings_leapmotor_wheel_learning">C11のメディアボタンを学習</string>
+    <string name="settings_leapmotor_clear_bindings">学習したボタンを削除</string>
+    <string name="settings_leapmotor_press_key">割り当てるステアリングボタンを押してください。15秒間待機します。</string>
+    <string name="settings_leapmotor_binding_saved">ボタンの割り当てを保存しました。</string>
+    <string name="settings_leapmotor_binding_failed">ボタンの割り当てを保存できませんでした。</string>
+    <string-array name="leapmotor_wheel_actions">
+        <item>次の曲</item>
+        <item>前の曲</item>
+        <item>再生</item>
+        <item>一時停止</item>
+        <item>再生／一時停止</item>
+    </string-array>
+    <string name="settings_leapmotor_showmap">C11の地図オーバーレイ（実験的機能）</string>
+    <string name="settings_leapmotor_showmap_description">車載端末が地図ウィンドウを要求するとCarPlay画面を表示します。他のアプリの上に表示する権限が必要です。</string>
+    <string name="settings_leapmotor_adb_features">Leapmotor機能 · ADBが必要</string>
+</resources>
