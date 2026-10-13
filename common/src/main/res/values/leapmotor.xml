@@ -13,4 +13,5 @@
     </string-array>
     <string name="settings_leapmotor_showmap">C11 map overlay (experimental)</string>
     <string name="settings_leapmotor_showmap_description">Show the CarPlay screen when the car requests its map window. Requires overlay permission.</string>
+    <string name="settings_leapmotor_adb_features">Leapmotor features · needs ADB</string>
 </resources>

@@ -57,6 +57,27 @@ class LeapmotorSettingsScreenshotsTest {
             val directory = File("build/leapmotor-screenshots").apply { mkdirs() }
             File(directory, "$name.png").outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
             bitmap.recycle()
+            AirPlayPersistence.saveWirelessHotspotMode(activity, com.shilapi.xcertplay.orchestration.WirelessHotspotMode.MANUAL)
+            val hotspot = LinearLayout(activity)
+            ReflectionHelpers.callInstanceMethod<Unit>(activity, "renderBydAdbControls",
+                ReflectionHelpers.ClassParameter.from(LinearLayout::class.java, hotspot),
+                ReflectionHelpers.ClassParameter.from(com.shilapi.xcertplay.adb.LocalAdb.Access::class.java,
+                    com.shilapi.xcertplay.adb.LocalAdb.Access.READY))
+            assertTrue(descendants(hotspot).filterIsInstance<TextView>().any {
+                it.text == activity.getString(R.string.settings_leapmotor_adb_features)
+            })
+            val hotspotSwitch = descendants(hotspot).filterIsInstance<android.widget.Switch>().single()
+            assertTrue(!hotspotSwitch.isChecked)
+            hotspot.layoutDirection = configuration.layoutDirection
+            hotspot.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            hotspot.layout(0, 0, width, hotspot.measuredHeight)
+            val hotspotBitmap = Bitmap.createBitmap(width, hotspot.height, Bitmap.Config.ARGB_8888)
+            hotspot.draw(Canvas(hotspotBitmap))
+            File(directory, "$name-hotspot.png").outputStream().use {
+                assertTrue(hotspotBitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+            }
+            hotspotBitmap.recycle()
             ReflectionHelpers.setField(activity, "settingsSectionFilter", setOf(SettingsSection.CLUSTER_MAP))
             val maps = LinearLayout(activity)
             ReflectionHelpers.callInstanceMethod<Unit>(activity, "allSettingsSections",

@@ -13,4 +13,5 @@
         <item>暫停</item>
         <item>播放 / 暫停</item>
     </string-array>
+    <string name="settings_leapmotor_adb_features">零跑功能 · 需要 ADB</string>
 </resources>

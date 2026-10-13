@@ -90,3 +90,9 @@ in the final full run (HTTP 401 instead of 200); its entire test class passed on
 isolated rerun of both this branch and the unmodified archive. The final isolated
 run also included all 10 new tests and passed. The complete CI is therefore not
 reported as green. No C11 hardware validation has been performed.
+
+## 自动开启车机热点入口
+
+C11 平台指纹命中 `qti/msmnile_gvmq` 时，“车机热点”连接模式也显示“零跑功能 · 需要 ADB”，复用上游的“自动开启热点”开关与授权流程。需要本机 ADB 可连接或等待授权；不可连接时上游仍会隐藏此入口。
+
+先在系统设置配置热点，保存相同的名称和密码，再启用自动开启热点，并按需启用“车辆启动后打开”。启动使用系统共享网络接口及已有 ADB 回退，不更改热点名称、密码，不主动关闭热点。这次只开放入口，未加入零跑私有热点服务；热点能否自动恢复、开机自启是否被固件允许，仍需实车验证。

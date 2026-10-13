@@ -2563,14 +2563,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     private fun bydAdbSettings(parent: LinearLayout) {
         if (AirPlayPersistence.loadWirelessHotspotMode(this) != WirelessHotspotMode.MANUAL) return
-        if (!CarHotspotSetup.isBydHeadUnit(this)) {
-            Log.i("DiPlay-Hotspot", "settings hidden: BYD head unit not detected")
+        if (!CarHotspotSetup.isBydHeadUnit(this) && !LeapmotorC11.detected()) {
+            Log.i("DiPlay-Hotspot", "settings hidden: supported head unit not detected")
             return
         }
         if (searchIndexSink != null) {
             // Index discoverable names without starting the asynchronous permission probe.
             searchIndexSink?.addAll(listOf(
-                getString(R.string.byd_adb_features),
+                getString(if (LeapmotorC11.detected()) R.string.settings_leapmotor_adb_features else R.string.byd_adb_features),
                 getString(R.string.auto_car_hotspot_title),
                 getString(R.string.btn_auto_apply_permissions),
             ))
@@ -2583,7 +2583,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             val access = runCatching { CarHotspotSetup.check(applicationContext) }
                 .onFailure { Log.w("DiPlay-Hotspot", "settings ADB check failed", it) }
                 .getOrDefault(LocalAdb.Access.UNREACHABLE)
-            Log.i("DiPlay-Hotspot", "settings eligibility: byd=true adb=$access visible=${CarHotspotSettings.visible(true, access)}")
+            Log.i("DiPlay-Hotspot", "settings eligibility: supported=true adb=$access visible=${CarHotspotSettings.visible(true, access)}")
             runOnUiThread {
                 if (bydAdbControls !== controls || isFinishing || isDestroyed) return@runOnUiThread
                 if (CarHotspotSettings.visible(true, access)) {
@@ -2604,7 +2604,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             controls.visibility = View.GONE
             return
         }
-        section(controls, getString(R.string.byd_adb_features), R.drawable.ic_dp_permissions) { card ->
+        section(controls, getString(if (LeapmotorC11.detected()) R.string.settings_leapmotor_adb_features else R.string.byd_adb_features), R.drawable.ic_dp_permissions) { card ->
             if (AirPlayPersistence.loadWirelessHotspotMode(this) == WirelessHotspotMode.MANUAL) {
                 adbToggle(card, R.string.auto_car_hotspot_title, R.string.auto_car_hotspot_description,
                     read = { CarHotspotSettings.enabled(this) },

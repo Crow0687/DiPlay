@@ -13,4 +13,5 @@
     </string-array>
     <string name="settings_leapmotor_showmap">零跑地图悬浮窗（实验性）</string>
     <string name="settings_leapmotor_showmap_description">响应原车地图窗口广播，显示 CarPlay 主画面；需要悬浮窗权限。</string>
+    <string name="settings_leapmotor_adb_features">零跑功能 · 需要 ADB</string>
 </resources>

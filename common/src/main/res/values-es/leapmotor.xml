@@ -13,4 +13,5 @@
         <item>Pausar</item>
         <item>Reproducir / pausar</item>
     </string-array>
+    <string name="settings_leapmotor_adb_features">Funciones Leapmotor · requieren ADB</string>
 </resources>

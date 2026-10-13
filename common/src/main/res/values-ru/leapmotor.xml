@@ -13,4 +13,5 @@
         <item>Пауза</item>
         <item>Воспроизведение / пауза</item>
     </string-array>
+    <string name="settings_leapmotor_adb_features">Функции Leapmotor · требуется ADB</string>
 </resources>

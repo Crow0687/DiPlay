@@ -13,4 +13,5 @@
         <item>إيقاف مؤقت</item>
         <item>تشغيل / إيقاف مؤقت</item>
     </string-array>
+    <string name="settings_leapmotor_adb_features">ميزات Leapmotor · تتطلب ADB</string>
 </resources>
